@@ -1,0 +1,6 @@
+{
+  "name": "Hyper Vision Agent",
+  "description": "High-performance stateless C++ Chromium headless browser engine with CDP protocol automation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
