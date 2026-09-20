@@ -129,6 +129,9 @@ std::vector<std::string> ProcessLauncher::BuildArgumentList() const {
     }
 
     // High performance stateless flags
+    args.push_back("--no-zygote");
+    args.push_back("--disable-crash-reporter");
+    args.push_back("--disable-breakpad");
     args.push_back("--disable-dev-shm-usage");
     args.push_back("--disable-background-networking");
     args.push_back("--disable-default-apps");

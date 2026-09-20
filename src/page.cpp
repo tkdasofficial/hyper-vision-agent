@@ -8,13 +8,42 @@ namespace hyper_vision_agent {
 namespace {
 
 std::string ExtractField(const std::string& json, const std::string& key) {
-    std::string pattern = "\"" + key + "\"\\s*:\\s*\"([^\"]*)\"";
-    std::regex re(pattern);
-    std::smatch match;
-    if (std::regex_search(json, match, re) && match.size() > 1) {
-        return match[1].str();
+    std::string search_key = "\"" + key + "\"";
+    size_t key_pos = json.find(search_key);
+    if (key_pos == std::string::npos) return "";
+
+    size_t colon_pos = json.find(':', key_pos + search_key.length());
+    if (colon_pos == std::string::npos) return "";
+
+    size_t quote_start = json.find('"', colon_pos + 1);
+    if (quote_start == std::string::npos) return "";
+
+    std::string result;
+    bool escaped = false;
+    for (size_t i = quote_start + 1; i < json.length(); ++i) {
+        char c = json[i];
+        if (escaped) {
+            switch (c) {
+                case '"': result += '"'; break;
+                case '\\': result += '\\'; break;
+                case '/': result += '/'; break;
+                case 'b': result += '\b'; break;
+                case 'f': result += '\f'; break;
+                case 'n': result += '\n'; break;
+                case 'r': result += '\r'; break;
+                case 't': result += '\t'; break;
+                default: result += c; break;
+            }
+            escaped = false;
+        } else if (c == '\\') {
+            escaped = true;
+        } else if (c == '"') {
+            return result;
+        } else {
+            result += c;
+        }
     }
-    return "";
+    return result;
 }
 
 int64_t ExtractIntField(const std::string& json, const std::string& key, int64_t def = 0) {

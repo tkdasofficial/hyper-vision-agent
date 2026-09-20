@@ -121,7 +121,12 @@ bool ScreenRecorder::start_recording(std::shared_ptr<Page> page, const ScreenRec
         // Acknowledge frame to CDP immediately to receive continuous flow
         if (!frame_session_id_str.empty() && page_) {
             std::string ack_params = "{\"sessionId\":" + frame_session_id_str + "}";
-            page_->GetDispatcher()->Dispatch("Page.screencastFrameAck", ack_params, page_->GetSessionId());
+            auto c = page_->GetConnection();
+            if (c) {
+                try {
+                    c->SendCommandAsync("Page.screencastFrameAck", ack_params, page_->GetSessionId());
+                } catch (...) {}
+            }
         }
 
         if (!data_b64.empty()) {
@@ -158,11 +163,11 @@ bool ScreenRecorder::stop_recording() {
 
     if (page_) {
         // Stop CDP screencast
-        page_->GetDispatcher()->Dispatch("Page.stopScreencast", "{}", page_->GetSessionId());
         auto conn = page_->GetConnection();
         if (conn) {
             conn->UnsubscribeEvent("Page.screencastFrame");
         }
+        page_->GetDispatcher()->Dispatch("Page.stopScreencast", "{}", page_->GetSessionId());
     }
 
     close_ffmpeg_pipe();

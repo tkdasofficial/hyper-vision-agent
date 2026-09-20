@@ -30,48 +30,51 @@ int64_t ExtractJsonInt(const std::string& json, const std::string& key, int64_t 
 
 std::string ExtractJsonObject(const std::string& json, const std::string& key) {
     std::string search_key = "\"" + key + "\"";
-    size_t key_pos = json.find(search_key);
-    if (key_pos == std::string::npos) return "";
+    size_t key_pos = 0;
+    while ((key_pos = json.find(search_key, key_pos)) != std::string::npos) {
+        size_t after_key = key_pos + search_key.length();
+        size_t colon_pos = json.find_first_not_of(" \t\r\n", after_key);
+        if (colon_pos != std::string::npos && json[colon_pos] == ':') {
+            size_t val_start = json.find_first_not_of(" \t\r\n", colon_pos + 1);
+            if (val_start == std::string::npos) return "";
 
-    size_t colon_pos = json.find(':', key_pos + search_key.length());
-    if (colon_pos == std::string::npos) return "";
-
-    size_t val_start = json.find_first_not_of(" \t\r\n", colon_pos + 1);
-    if (val_start == std::string::npos) return "";
-
-    char open_char = json[val_start];
-    if (open_char == '{') {
-        int depth = 0;
-        for (size_t i = val_start; i < json.size(); ++i) {
-            if (json[i] == '{') depth++;
-            else if (json[i] == '}') {
-                depth--;
-                if (depth == 0) {
-                    return json.substr(val_start, i - val_start + 1);
+            char open_char = json[val_start];
+            if (open_char == '{') {
+                int depth = 0;
+                for (size_t i = val_start; i < json.size(); ++i) {
+                    if (json[i] == '{') depth++;
+                    else if (json[i] == '}') {
+                        depth--;
+                        if (depth == 0) {
+                            return json.substr(val_start, i - val_start + 1);
+                        }
+                    }
+                }
+            } else if (open_char == '[') {
+                int depth = 0;
+                for (size_t i = val_start; i < json.size(); ++i) {
+                    if (json[i] == '[') depth++;
+                    else if (json[i] == ']') {
+                        depth--;
+                        if (depth == 0) {
+                            return json.substr(val_start, i - val_start + 1);
+                        }
+                    }
+                }
+            } else if (open_char == '"') {
+                size_t end_quote = json.find('"', val_start + 1);
+                if (end_quote != std::string::npos) {
+                    return json.substr(val_start, end_quote - val_start + 1);
+                }
+            } else {
+                size_t end_val = json.find_first_of(",}\r\n", val_start);
+                if (end_val != std::string::npos) {
+                    return json.substr(val_start, end_val - val_start);
                 }
             }
+            return "";
         }
-    } else if (open_char == '[') {
-        int depth = 0;
-        for (size_t i = val_start; i < json.size(); ++i) {
-            if (json[i] == '[') depth++;
-            else if (json[i] == ']') {
-                depth--;
-                if (depth == 0) {
-                    return json.substr(val_start, i - val_start + 1);
-                }
-            }
-        }
-    } else if (open_char == '"') {
-        size_t end_quote = json.find('"', val_start + 1);
-        if (end_quote != std::string::npos) {
-            return json.substr(val_start, end_quote - val_start + 1);
-        }
-    } else {
-        size_t end_val = json.find_first_of(",}\r\n", val_start);
-        if (end_val != std::string::npos) {
-            return json.substr(val_start, end_val - val_start);
-        }
+        key_pos = after_key;
     }
     return "";
 }

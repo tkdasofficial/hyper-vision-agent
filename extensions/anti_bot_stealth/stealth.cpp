@@ -320,7 +320,7 @@ CaptchaDetectResult CaptchaSolver::DetectCaptcha(Page& page) {
 
     std::string scan_script = 
         "(function() {"
-        "  // 1. Cloudflare Turnstile"
+        "  /* 1. Cloudflare Turnstile */\n"
         "  var turnstileIframe = document.querySelector('iframe[src*=\"challenges.cloudflare.com\"], iframe[src*=\"turnstile\"], div.cf-turnstile');"
         "  if (turnstileIframe) {"
         "    var rect = turnstileIframe.getBoundingClientRect();"
@@ -332,7 +332,7 @@ CaptchaDetectResult CaptchaSolver::DetectCaptcha(Page& page) {
         "      url: turnstileIframe.src || ''"
         "    });"
         "  }"
-        "  // 2. Google reCAPTCHA v2"
+        "  /* 2. Google reCAPTCHA v2 */\n"
         "  var recaptchaIframe = document.querySelector('iframe[src*=\"google.com/recaptcha\"], div.g-recaptcha');"
         "  if (recaptchaIframe) {"
         "    var rect = recaptchaIframe.getBoundingClientRect();"
@@ -344,7 +344,7 @@ CaptchaDetectResult CaptchaSolver::DetectCaptcha(Page& page) {
         "      url: recaptchaIframe.src || ''"
         "    });"
         "  }"
-        "  // 3. hCaptcha"
+        "  /* 3. hCaptcha */\n"
         "  var hcaptchaIframe = document.querySelector('iframe[src*=\"hcaptcha.com\"], div.h-captcha');"
         "  if (hcaptchaIframe) {"
         "    var rect = hcaptchaIframe.getBoundingClientRect();"
